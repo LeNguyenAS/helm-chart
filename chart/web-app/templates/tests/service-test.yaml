@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ template "web-app.fullname" . }}-service-test"
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ template "web-app.name" . }}
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: curl
+      image: gcr.io/practice-230207/django-app:v2
+      command: ['curl']
+      args:  ['{{ template "web-app.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never

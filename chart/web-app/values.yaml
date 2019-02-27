@@ -1,0 +1,93 @@
+# Default values for web-app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 2
+sleepyTime: 10
+image:
+  repository: gcr.io/practice-230207/django-app
+  tag: v2
+  pullPolicy: Always
+
+namespace: practice
+labels: web-app
+service:
+  type: NodePort
+  port: 80
+  targetPort: 8000
+  nameService: web-app-service
+
+deployment:
+  name: web-app
+  minReadySeconds: 5
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 1
+
+  container:
+    web_app:
+      name: web-app
+      containerPort: 8000
+
+      resources:
+        requests:
+          memory: 256Mi
+          cpu: 200m
+        limits:
+          memory: 512Mi
+          cpu: 500m
+    proxy_sql:
+      image: b.gcr.io/cloudsql-docker/gce-proxy:1.09
+      name: cloudsql-proxy
+      instances: practice-230207:us-central1:django-instance=tcp:5432
+      credential_path: /secrets/cloudsql
+      resources:
+        requests:
+          memory: 256Mi
+          cpu: 100m
+        limits:
+          memory: 512Mi
+          cpu: 200m
+
+  readinessProbe:
+    path: /app-v2/healthy/
+    port: 8000
+    initialDelaySeconds: 30
+    timeoutSeconds: 10
+    periodSeconds: 15
+  livenessProbe:
+    path: /app-v2/healthy/
+    port: 8000
+    periodSeconds: 15
+    initialDelaySeconds: 30
+    timeoutSeconds: 10
+
+  env:
+    dbUser:
+      name: cloudsql-oauth-credentials
+      key: database-user
+    dbPass:
+      name: cloudsql-oauth-credentials
+      key: database-pass
+    dbName:
+      name: postgres-configmap
+      key: database-name
+
+  volumes:
+    name: cloudsql-oauth-credentials
+    secretName: cloudsql-oauth-credentials
+
+autoScale:
+  name: auto-scale
+  minReplicas: 2
+  maxReplicas: 10
+  nameDeployment: web-app
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: 50
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: 80

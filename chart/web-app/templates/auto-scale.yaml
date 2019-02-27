@@ -1,0 +1,15 @@
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Values.autoScale.name | quote }}
+  namespace: {{ .Values.namespace }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.autoScale.nameDeployment | quote}}
+  minReplicas: {{ .Values.autoScale.minReplicas }}
+  maxReplicas: {{ .Values.autoScale.maxReplicas }}
+  metrics:
+{{ toYaml .Values.autoScale.metrics | indent 2 }}
