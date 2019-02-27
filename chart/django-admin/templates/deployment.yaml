@@ -1,0 +1,86 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.name | quote }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.deployment.labels | quote }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.deployment.labels | quote }}
+  minReadySeconds: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ .Values.deployment.strategy.maxSurge }}
+      maxUnavailable: {{ .Values.deployment.strategy.maxUnavailable }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.deployment.labels | quote }}
+    spec:
+      containers:
+      - name: {{ .Values.deployment.container.name | quote }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag}}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.deployment.container.containerPort }}
+        resources:
+          requests:
+            memory: {{ .Values.deployment.container.resources.requests.memory }}
+            cpu: {{ .Values.deployment.container.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.deployment.container.resources.limits.memory }}
+            cpu: {{ .Values.deployment.container.resources.limits.cpu }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.deployment.readinessProbe.path }}
+            port: {{ .Values.deployment.readinessProbe.port }}
+          initialDelaySeconds: {{ .Values.deployment.readinessProbe.initialDelaySeconds }}
+          timeoutSeconds:  {{ .Values.deployment.readinessProbe.timeoutSeconds }}
+          periodSeconds:  {{ .Values.deployment.readinessProbe.periodSeconds }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.deployment.livenessProbe.path }}
+            port: {{ .Values.deployment.livenessProbe.port }}
+          periodSeconds: {{ .Values.deployment.livenessProbe.periodSeconds }}
+          initialDelaySeconds: {{ .Values.deployment.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.deployment.livenessProbe.timeoutSeconds }}
+
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.deployment.env.dbUser.name }}
+              key: {{ .Values.deployment.env.dbUser.key }}
+
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.deployment.env.dbPass.name }}
+              key: {{ .Values.deployment.env.dbPass.key }}
+
+      - image: {{ .Values.deployment.proxySql.image }}
+        name: {{ .Values.deployment.proxySql.name }}
+        command: ["/cloud_sql_proxy", "--dir=/cloudsql",
+                  "-instances={{ .Values.deployment.proxySql.instances }}",
+                  "-credential_file={{ .Values.deployment.proxySql.credential_path }}/credentials.json"]
+        volumeMounts:
+          - name: {{ .Values.deployment.volumes.name }}
+            mountPath: {{ .Values.deployment.proxySql.credential_path }}
+            readOnly: true
+
+        resources:
+          requests:
+            memory: {{ .Values.deployment.proxySql.resources.requests.memory }}
+            cpu: {{ .Values.deployment.proxySql.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.deployment.proxySql.resources.limits.memory }}
+            cpu: {{ .Values.deployment.proxySql.resources.limits.memory }}
+
+      volumes:
+        - name: {{ .Values.deployment.volumes.name }}
+          secret:
+            secretName: {{ .Values.deployment.volumes.secretName }}

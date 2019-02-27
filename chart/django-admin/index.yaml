@@ -1,0 +1,13 @@
+apiVersion: v1
+entries:
+  django-admin:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: 2019-02-27T16:33:07.905955+07:00
+    description: A Helm chart for Kubernetes
+    digest: e279986102ede3c74cd1a9b7cbecd6a073492e8df1661e9e17d3337667aa0b5b
+    name: django-admin
+    urls:
+    - django-admin-0.1.0.tgz
+    version: 0.1.0
+generated: 2019-02-27T16:33:07.9048+07:00
