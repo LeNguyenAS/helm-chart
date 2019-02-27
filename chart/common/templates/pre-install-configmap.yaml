@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configmap.name }}
+  namespace: {{ .Values.namespace }}
+  annotations:
+    "helm.sh/hook": pre-install
+data:
+  database-name: {{ .Values.configmap.data.name }}
+  database-host: {{ .Values.configmap.data.host }}
