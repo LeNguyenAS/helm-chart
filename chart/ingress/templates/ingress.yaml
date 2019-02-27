@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Values.ingress.name }}
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "lenguyen-blc"
+  namespace: {{ .Values.namespace }}
+spec:
+ rules:
+  - http:
+      paths:
+{{ toYaml .Values.ingress.paths | indent 8 }}
