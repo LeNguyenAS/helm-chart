@@ -1,0 +1,13 @@
+apiVersion: v1
+entries:
+  ingress:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: 2019-02-27T16:38:08.641818+07:00
+    description: A Helm chart for Kubernetes
+    digest: baa57236c325909536fbff88f7cc49518ee6b4fb1c998682e02dc06510478617
+    name: ingress
+    urls:
+    - ingress-0.1.0.tgz
+    version: 0.1.0
+generated: 2019-02-27T16:38:08.640167+07:00
